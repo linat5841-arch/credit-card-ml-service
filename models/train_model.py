@@ -1,70 +1,42 @@
 import pandas as pd
 import pickle
-import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report
+from sklearn.linear_model import LogisticRegression
 
+# === Загрузка данных ===
+df = pd.read_csv("data/raw/UCI_Credit_Card.csv")
 
-# Путь к данным
-DATA_PATH = os.path.join("data", "raw", "UCI_Credit_Card.csv")
+# Удаляем ID если есть
+if "ID" in df.columns:
+    df = df.drop(columns=["ID"])
 
-# Путь для сохранения модели
-MODEL_PATH = os.path.join("models", "model_v1.pkl")
+# Переименование target
+df = df.rename(columns={"default.payment.next.month": "target"})
 
+X = df.drop("target", axis=1)
+y = df["target"]
 
-def load_data():
-    df = pd.read_csv(DATA_PATH)
+# === Разделение данных ===
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
-    # Удаляем лишний столбец ID
-    if "ID" in df.columns:
-        df = df.drop(columns=["ID"])
+# === МОДЕЛЬ v1 (Logistic Regression) ===
+model_v1 = LogisticRegression(max_iter=1000)
+model_v1.fit(X_train, y_train)
 
-    return df
+with open("models/model_v1.pkl", "wb") as f:
+    pickle.dump(model_v1, f)
 
+print("Model v1 saved")
 
-def preprocess(df):
-    # Целевая переменная
-    target = "default.payment.next.month"
+# === МОДЕЛЬ v2 (Random Forest) ===
+model_v2 = RandomForestClassifier(n_estimators=50, random_state=42)
+model_v2.fit(X_train, y_train)
 
-    X = df.drop(columns=[target])
-    y = df[target]
+with open("models/model_v2.pkl", "wb") as f:
+    pickle.dump(model_v2, f)
 
-    return X, y
-
-
-def train():
-    print("Загрузка данных...")
-    df = load_data()
-
-    print("Предобработка...")
-    X, y = preprocess(df)
-
-    print("Разделение данных...")
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-
-    print("Обучение модели...")
-    model = RandomForestClassifier(
-        n_estimators=100,
-        random_state=42
-    )
-
-    model.fit(X_train, y_train)
-
-    print("Оценка модели...")
-    y_pred = model.predict(X_test)
-    print(classification_report(y_test, y_pred))
-
-    print("Сохранение модели...")
-    with open(MODEL_PATH, "wb") as f:
-        pickle.dump(model, f)
-
-    print(f"Модель сохранена в {MODEL_PATH}")
-
-
-if __name__ == "__main__":
-    train()
-    
+print("Model v2 saved")

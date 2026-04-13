@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
-from app.model_handler import load_model, predict
+from app.model_handler import load_models, predict
 
 app = Flask(__name__)
 
-model = load_model()
+models = load_models()
 
 
 @app.route("/health", methods=["GET"])
@@ -19,7 +19,7 @@ def predict_endpoint():
         if not data:
             return jsonify({"error": "Empty request body"}), 400
 
-        result = predict(model, data)
+        result = predict(models, data)
         return jsonify(result), 200
 
     except Exception as e:
@@ -28,3 +28,4 @@ def predict_endpoint():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+    
