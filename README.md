@@ -1,82 +1,70 @@
-# ML сервис прогнозирования дефолта по кредитным картам
+# Credit Card Default Prediction ML Service
 
 ## Описание проекта
 
-В рамках проекта разработан и внедрён ML-сервис для прогнозирования дефолта по кредитным картам.
+Сервис машинного обучения для прогнозирования дефолта по кредитным картам на основе датасета **Default of Credit Card Clients Dataset** (UCI Machine Learning Repository).
 
-Сервис реализует полный цикл внедрения модели машинного обучения в production-like среду:
-- обучение модели
-- сохранение модели
-- развертывание веб-сервиса
-- контейнеризация
-- организация A/B тестирования
-
-Домен: финансы / кредитный скоринг.
+Проект реализует production-like pipeline:
+- обучение и сохранение ML-моделей
+- загрузку моделей для инференса
+- REST API на Flask
+- контейнеризацию через Docker
+- базовую оркестрацию через Docker Compose
+- A/B-тестирование двух версий модели
 
 ---
 
-## Данные
+## Цель проекта
 
-Используется датасет:
+Разработать и внедрить сервис прогнозирования дефолта, готовый к развёртыванию и тестированию разных версий моделей в production-like среде.
 
-Default of Credit Card Clients Dataset  
-Источник: UCI Machine Learning Repository / Kaggle
+---
+
+## Датасет
+
+Используется датасет **Default of Credit Card Clients Dataset**.
+
+Содержит:
+- демографические данные клиентов
+- кредитный лимит
+- историю платежей
+- суммы счетов и платежей
 
 Целевая переменная:
-- default.payment.next.month (1 — дефолт, 0 — нет)
-
-Датасет включает:
-- демографические характеристики клиентов
-- историю платежей
-- суммы задолженностей
-- суммы платежей
+- `default.payment.next.month` — дефолт в следующем месяце
 
 ---
 
-## Модель
+## Используемые модели
 
-В проекте используется модель:
-- RandomForestClassifier
+В проекте реализованы две версии:
 
-Пример метрик:
-- Accuracy: ~0.81
-- F1-score: ~0.79
+- **v1** — LogisticRegression  
+- **v2** — RandomForestClassifier  
 
-Модель обучается в скрипте:
-models/train_model.py
-
-Сохраняется в файл:
-models/model_v1.pkl
+Это позволяет реализовать A/B-тестирование.
 
 ---
 
-## API
+## Структура проекта
 
-Веб-сервис реализован с использованием Flask.
-
-### Эндпоинты
-
-#### 1. Проверка работоспособности
-
-GET /health
-
-Ответ:
-
-```json
-{"status": "healthy"}
-#### 2. Предсказание
-
-POST /predict
-
-Пример запроса:
-
-```bash
-curl -X POST http://127.0.0.1:5000/predict ^
--H "Content-Type: application/json" ^
--d "{\"LIMIT_BAL\":20000,\"SEX\":2,\"EDUCATION\":2,\"MARRIAGE\":1,\"AGE\":24,\"PAY_0\":2,\"PAY_2\":2,\"PAY_3\":-1,\"PAY_4\":-1,\"PAY_5\":-2,\"PAY_6\":-2,\"BILL_AMT1\":3913,\"BILL_AMT2\":3102,\"BILL_AMT3\":689,\"BILL_AMT4\":0,\"BILL_AMT5\":0,\"BILL_AMT6\":0,\"PAY_AMT1\":0,\"PAY_AMT2\":689,\"PAY_AMT3\":0,\"PAY_AMT4\":0,\"PAY_AMT5\":0,\"PAY_AMT6\":0}"
-Ответ
-{
-  "prediction": 1,
-  "probability": 0.83,
-  "model_version": "v1"
-}
+```text
+Project_ML/
+├── app/
+│   ├── api.py
+│   └── model_handler.py
+├── data/
+│   └── raw/
+├── docker/
+│   └── Dockerfile
+├── models/
+│   ├── model_v1.pkl
+│   ├── model_v2.pkl
+│   └── train_model.py
+├── tests/
+│   └── test_api.py
+├── ARCHITECTURE.md
+├── ab_test_plan.md
+├── docker-compose.yml
+├── README.md
+└── requirements.txt
