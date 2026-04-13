@@ -1,11 +1,8 @@
 from flask import Flask, request, jsonify
-
-from model_handler import load_model, predict
-
+from app.model_handler import load_model, predict
 
 app = Flask(__name__)
 
-# Загружаем модель при старте
 model = load_model()
 
 
@@ -19,11 +16,10 @@ def predict_endpoint():
     try:
         data = request.get_json()
 
-        if data is None:
-            return jsonify({"error": "Пустой JSON"}), 400
+        if not data:
+            return jsonify({"error": "Empty request body"}), 400
 
-        result = predict(data, model)
-
+        result = predict(model, data)
         return jsonify(result), 200
 
     except Exception as e:
@@ -32,4 +28,3 @@ def predict_endpoint():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-    
