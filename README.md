@@ -135,7 +135,8 @@ docker-compose down
 ##  Docker Hub
 
 Образ доступен по ссылке:
-https://hub.docker.com/r/ТВОЙ_ЮЗЕР/credit-card-ml-service
+https://github.com/linat5841-arch/credit-card-ml-service
+
 
 API
 1. Проверка состояния сервиса
